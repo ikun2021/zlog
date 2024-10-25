@@ -1,7 +1,7 @@
-package zaplog
+package zlog
 
 import (
-	"github.com/luxun9527/zaplog/report"
+	"github.com/luxun9527/zlog/report"
 	"github.com/mitchellh/mapstructure"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"

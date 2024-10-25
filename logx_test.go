@@ -1,4 +1,4 @@
-package zaplog
+package zlog
 
 import (
 	"github.com/zeromicro/go-zero/core/conf"

@@ -1,4 +1,4 @@
-package zaplog
+package zlog
 
 import "go.uber.org/zap"
 
