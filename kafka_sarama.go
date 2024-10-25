@@ -18,13 +18,13 @@ type kafkaSaramaLogger struct {
 }
 
 func (k *kafkaSaramaLogger) Print(v ...interface{}) {
-	k.logger.Info(v)
+	k.logger.Debug(v)
 }
 func (k *kafkaSaramaLogger) Printf(format string, v ...interface{}) {
-	k.logger.Infof(format, v)
+	k.logger.Debugf(format, v)
 }
 func (k *kafkaSaramaLogger) Println(v ...interface{}) {
-	k.logger.Infoln(v)
+	k.logger.Debugln(v)
 }
 func (k *kafkaSaramaLogger) Update(logger ...*zap.Logger) {
 	if len(logger) == 0 {
