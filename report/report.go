@@ -79,7 +79,9 @@ type ReportWriterBuffer struct {
 func (l *ReportWriterBuffer) Start() {
 	for {
 		time.Sleep(time.Duration(l.flushSec) * time.Second)
-		l.Sync()
+		if err := l.Sync(); err != nil {
+			log.Printf("report writer buffer sync error:%v", err)
+		}
 	}
 }
 
@@ -88,7 +90,9 @@ func (l *ReportWriterBuffer) Write(p []byte) (n int, err error) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	data := pretty.Pretty(p)
-	l.buf.Write(data)
+	if _, err := l.buf.Write(data); err != nil {
+		return 0, err
+	}
 	l.count++
 	if l.count >= l.maxCount {
 		l.buf.Flush()

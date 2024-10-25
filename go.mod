@@ -1,4 +1,4 @@
-module github.com/luxun9527/zaplog
+module github.com/luxun9527/zlog
 
 go 1.20
 
