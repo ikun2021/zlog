@@ -15,7 +15,7 @@ func TestLogx(t *testing.T) {
 	//	ChatID:   0,
 	//	FlushSec: 3,
 	//}
-	InitZapLogger(&c)
+	InitDefaultZapLogger(&c)
 	logx.SetWriter(NewZapWriter(DefaultLogger))
 	logx.Debugw("this is debug level ", logx.Field("key", "value"))
 	logx.Infow("this is info level ", logx.Field("key", "value"))

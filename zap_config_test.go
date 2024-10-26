@@ -39,7 +39,7 @@ func TestConsoleJson(t *testing.T) {
 		Color:   true,
 		options: nil,
 	}
-	InitZapLogger(&c)
+	InitDefaultZapLogger(&c)
 	DefaultSugarLog.Debugf("test level %v", "debug")
 	DefaultSugarLog.Infof("info level %v", "info")
 	DefaultSugarLog.Warnf("warn level %v", "warn")
@@ -99,7 +99,7 @@ func TestViperConfig(t *testing.T) {
 	if err := v.Unmarshal(&c, viper.DecodeHook(StringToLogLevelHookFunc())); err != nil {
 		log.Panicf("Unmarshal config file failed, err:%v\n", err)
 	}
-	InitZapLogger(&c)
+	InitDefaultZapLogger(&c)
 	Debug("debug level ", zap.Any("test", "test"))
 	Info("info level ", zap.Any("test", "test"))
 	Warn("warn level ", zap.Any("test", "test"))

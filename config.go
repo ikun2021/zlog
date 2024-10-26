@@ -56,7 +56,8 @@ type Config struct {
 	// file 模式是否输出到控制台
 	Console bool `json:"console" mapstructure:"console"`
 	// 非json格式，是否加上颜色。
-	Color bool `json:",default=true" mapstructure:"color"`
+	Color bool  `json:",default=true" mapstructure:"color"`
+	Port  int32 `json:",default=true" mapstructure:"port"`
 	//是否report
 	IsReport bool `json:",optional" mapstructure:"isReport"`
 	//report配置
@@ -183,7 +184,9 @@ func (lc *Config) Build() *zap.Logger {
 	if lc.Name != "" {
 		logger = logger.With(zap.String("project", lc.Name))
 	}
-
+	if lc.Port > 0 {
+		InitLogServer(lc.Port)
+	}
 	return logger.WithOptions(lc.options...)
 
 }

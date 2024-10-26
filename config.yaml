@@ -15,6 +15,7 @@ Compress: false #默认为false file模式参数 是否压缩
 Console: false #默认为false file模式参数 是否同时输出到控制台
 Color: true #默认为false  输出是否彩色 在开发的时候推荐使用。
 IsReport: true  #默认为false 是否上报到im工具,开启上报的话，需要在程序结束执行sync
+Port: 34567 #http
 ReportConfig: # 上报配置 warn级别以上报到im工具
   Type: lark # 可选 lark(飞书也是这个) wx tg
   Token: https://open.feishu.cn/open-apis/bot/v2/hook/71f86ea61212-ab9a23-464512-b40b-1be001212ffe910a # lark 飞书填群机器人webhook tg填token wx填key   这个示例地址无效。

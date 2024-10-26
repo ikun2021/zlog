@@ -75,7 +75,7 @@ func UpdateLoggerLevel(level zapcore.Level) {
 	ProdConfig.UpdateLevel(level)
 }
 
-func InitZapLogger(loggerConfig *Config) {
+func InitDefaultLogger(loggerConfig *Config) {
 	DefaultLogger = loggerConfig.Build()
 	DefaultSugarLog = DefaultLogger.Sugar()
 	RedisLogger.Update()
