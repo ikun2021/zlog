@@ -49,7 +49,7 @@ const (
 
 var (
 	DevConfig = &Config{
-		Level:      zap.NewAtomicLevelAt(zap.InfoLevel),
+		Level:      zap.NewAtomicLevelAt(zap.DebugLevel),
 		AddCaller:  true,
 		CallerShip: 1,
 		Mode:       ConsoleMode,
