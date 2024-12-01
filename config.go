@@ -1,14 +1,17 @@
 package zlog
 
 import (
+	"fmt"
 	"github.com/luxun9527/zlog/report"
 	"github.com/mitchellh/mapstructure"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"log"
+	"net/http"
 	"os"
 	"reflect"
+	"sync"
 	"time"
 )
 
@@ -23,6 +26,10 @@ const (
 const (
 	_file    = "file"
 	_console = "console"
+)
+
+var (
+	_once sync.Once
 )
 
 type Config struct {
@@ -184,11 +191,38 @@ func (lc *Config) Build() *zap.Logger {
 	if lc.Name != "" {
 		logger = logger.With(zap.String("project", lc.Name))
 	}
+	logger = logger.WithOptions(lc.options...)
 	if lc.Port > 0 {
-		InitLogServer(lc.Port)
+		lc.InitLogServer(lc.Port)
+		logger.Sugar().Infof("log server init success,port:%d", lc.Port)
 	}
-	return logger.WithOptions(lc.options...)
+	return logger
 
+}
+
+func (lc *Config) InitLogServer(port int32) {
+	go func(p int32) {
+		_once.Do(func() {
+			http.HandleFunc("/updateLevel", func(w http.ResponseWriter, r *http.Request) {
+				// 解析查询参数
+				queryParams := r.URL.Query()
+				// 获取单个参数
+				level := queryParams.Get("level")
+				l, err := zapcore.ParseLevel(level)
+				if err != nil {
+					w.Write([]byte(`{"code":400,"message":"parse level failed"}`))
+					return
+				}
+				lc.UpdateLevel(l)
+				UpdateLoggerLevel(l)
+				w.Write([]byte(`{"code":200,"message":"update level success"}`))
+			})
+
+			if err := http.ListenAndServe(fmt.Sprintf("0.0.0.0:%d", p), nil); err != nil {
+				zap.S().Error("init log server start failed", zap.Error(err))
+			}
+		})
+	}(port)
 }
 
 func CustomTimeEncoder(t time.Time, enc zapcore.PrimitiveArrayEncoder) {

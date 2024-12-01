@@ -39,7 +39,6 @@ const (
 	EsModuleKey    = "es"
 	KafkaModuleKey = "kafka"
 	RedisModuleKey = "redis"
-	GinModuleKey   = "gin"
 )
 
 const (
@@ -81,7 +80,6 @@ func InitDefaultLogger(loggerConfig *Config) {
 	RedisLogger.Update()
 	InfoEsOlivereLogger.Update()
 	ErrorEsOlivereLogger.Update()
-	RedisLogger.Update()
 	KafkaSaramaLogger.Update()
 	GinOutPut.Update()
 }
