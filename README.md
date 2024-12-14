@@ -183,7 +183,7 @@ func TestReportLogger(t *testing.T) {
 
 默认是warn级别的日志往上报。
 
-![image-20241215000713865](C:\Users\dengyongcai\AppData\Roaming\Typora\typora-user-images\image-20241215000713865.png)
+![img](https://cdn.nlark.com/yuque/0/2024/png/12466223/1734196417421-15f464f8-97cb-40b0-847d-aa29736003fd.png)
 
 ### 5、支持中间件sdk日志
 
