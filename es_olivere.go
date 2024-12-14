@@ -22,7 +22,7 @@ func init() {
 	}
 	InfoEsOlivereLogger = &esOlivereLogger{
 		logger: DefaultLogger.With(zap.String("module", EsModuleKey)).Sugar(),
-		level:  zapcore.ErrorLevel,
+		level:  zapcore.DebugLevel,
 	}
 }
 
@@ -32,8 +32,8 @@ type esOlivereLogger struct {
 }
 
 func (esLog *esOlivereLogger) Printf(format string, v ...interface{}) {
-	if esLog.level == zapcore.InfoLevel {
-		esLog.logger.Infof(format, v...)
+	if esLog.level == zapcore.DebugLevel {
+		esLog.logger.Debugf(format, v...)
 	} else {
 		esLog.logger.Errorf(format, v...)
 	}

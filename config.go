@@ -36,7 +36,7 @@ type Config struct {
 	Name string `json:",optional" mapstructure:"name"`
 	//日志级别 debug info warn panic
 	Level zap.AtomicLevel `json:"Level" mapstructure:"level"`
-	//在error级别的时候 是否显示堆栈
+	//在panic级别的时候 是否显示堆栈
 	Stacktrace bool `json:",default=true" mapstructure:"stacktrace"`
 	//添加调用者信息
 	AddCaller bool `json:",default=true" mapstructure:"addCaller"`
@@ -48,7 +48,7 @@ type Config struct {
 	FileName string `json:",optional" mapstructure:"filename"`
 	//error级别的日志输入到不同的地方,默认console 输出到标准错误输出，file可以指定文件
 	ErrorFileName string `json:",optional" mapstructure:"errorFileName"`
-	// 日志文件大小 单位MB 默认500MB
+	// 单个日志文件大小 单位MB 默认100MB
 	MaxSize int `json:",optional" mapstructure:"maxSize"`
 	//日志保留天数
 	MaxAge int `json:",optional" mapstructure:"maxAge"`
@@ -65,10 +65,8 @@ type Config struct {
 	// 非json格式，是否加上颜色。
 	Color bool  `json:",default=true" mapstructure:"color"`
 	Port  int32 `json:",default=true" mapstructure:"port"`
-	//是否report
-	IsReport bool `json:",optional" mapstructure:"isReport"`
 	//report配置
-	ReportConfig report.ReportConfig `json:",optional" mapstructure:"reportConfig"`
+	ReportConfig *report.ReportConfig `json:",optional" mapstructure:"reportConfig"`
 	options      []zap.Option
 }
 
@@ -162,15 +160,19 @@ func (lc *Config) Build() *zap.Logger {
 		consoleWs := zapcore.NewCore(encoder, zapcore.Lock(os.Stdout), zapcore.ErrorLevel)
 		c = append(c, consoleWs)
 	}
-	if lc.IsReport {
+	if lc.ReportConfig != nil {
 		//上报的格式一律json
 		if !lc.Json {
 			encoderConfig.EncodeLevel = zapcore.LowercaseLevelEncoder
 			encoder = zapcore.NewJSONEncoder(encoderConfig)
 		}
+		emptyLevel := zap.AtomicLevel{}
+		if lc.ReportConfig.Level == emptyLevel {
+			lc.ReportConfig.Level = zap.NewAtomicLevelAt(zap.WarnLevel)
+		}
 		//指定级别的日志上报。
-		highCore := zapcore.NewCore(encoder, report.NewReportWriterBuffer(lc.ReportConfig), lc.ReportConfig.Level)
-		c = append(c, highCore)
+		reportCore := zapcore.NewCore(encoder, report.NewReportWriterBuffer(lc.ReportConfig), lc.ReportConfig.Level)
+		c = append(c, reportCore)
 	}
 
 	core := zapcore.NewTee(c...)
@@ -185,7 +187,6 @@ func (lc *Config) Build() *zap.Logger {
 	}
 	//当错误时是否添加堆栈信息
 	if lc.Stacktrace {
-		//在error级别以上添加堆栈
 		lc.options = append(lc.options, zap.AddStacktrace(zap.PanicLevel))
 	}
 	if lc.Name != "" {
@@ -203,22 +204,7 @@ func (lc *Config) Build() *zap.Logger {
 func (lc *Config) InitLogServer(port int32) {
 	go func(p int32) {
 		_once.Do(func() {
-			http.HandleFunc("/updateLevel", func(w http.ResponseWriter, r *http.Request) {
-				// 解析查询参数
-				queryParams := r.URL.Query()
-				// 获取单个参数
-				level := queryParams.Get("level")
-				l, err := zapcore.ParseLevel(level)
-				if err != nil {
-					w.Write([]byte(`{"code":400,"message":"parse level failed"}`))
-					return
-				}
-				lc.UpdateLevel(l)
-				UpdateLoggerLevel(l)
-				w.Write([]byte(`{"code":200,"message":"update level success"}`))
-			})
-
-			if err := http.ListenAndServe(fmt.Sprintf("0.0.0.0:%d", p), nil); err != nil {
+			if err := http.ListenAndServe(fmt.Sprintf("127.0.0.1:%d", p), lc.Level); err != nil {
 				zap.S().Error("init log server start failed", zap.Error(err))
 			}
 		})

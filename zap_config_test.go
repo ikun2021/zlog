@@ -1,115 +1,115 @@
 package zlog
 
 import (
+	"encoding/json"
 	"github.com/luxun9527/zlog/report"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
+	"io"
 	"log"
+	"net/http"
 	"testing"
+	"time"
 )
 
 func TestDefaultConfig(t *testing.T) {
-	Debugf("level %s", "test")
+	DevConfig.UpdateLevel(zap.DebugLevel)
+	Debugf("level %s", "debug")
 	Infof("level %s", "info")
-	Warnf("level %s", "info")
-	Panicf("level %s", "info")
+	Warnf("level %s", "warn")
+	Errorf("level %s", "error")
+	Panicf("level %s", "panic")
 }
-func TestConsoleJson(t *testing.T) {
-	l, _ := zap.ParseAtomicLevel("debug")
-	warnLevel, _ := zap.ParseAtomicLevel("warn")
-	c := Config{
-		Name:          "test",
-		Level:         l,
-		Stacktrace:    true,
-		AddCaller:     true,
-		CallerShip:    0,
-		Mode:          "console",
-		FileName:      "",
-		ErrorFileName: "",
-		MaxSize:       0,
-		MaxAge:        0,
-		MaxBackup:     0,
-		Async:         false,
-		Json:          true,
-		Compress:      false,
-		IsReport:      false,
-		ReportConfig: report.ReportConfig{
-			Type:     "lark",
-			Token:    "https://open.feishu.cn/open-apis/bot/v2/hook/71f86ea6-ab9a-4645-b40b-1be00ffe910a",
-			ChatID:   0,
-			FlushSec: 3,
-			MaxCount: 20,
-			Level:    warnLevel,
-		},
-
-		Color:   true,
-		options: nil,
-	}
-	InitDefaultLogger(&c)
-	DefaultSugarLog.Debugf("test level %v", "debug")
-	DefaultSugarLog.Infof("info level %v", "info")
-	DefaultSugarLog.Warnf("warn level %v", "warn")
-	DefaultSugarLog.Errorf("error level %v", "error")
-	DefaultSugarLog.Panicf("panic level %v", "panic")
+func TestProdConfig(t *testing.T) {
+	InitDefaultLogger(ProdConfig)
+	ProdConfig.UpdateLevel(zap.DebugLevel)
+	Debugf("level %s", "debug")
+	Infof("level %s", "info")
+	Warnf("level %s", "warn")
+	Errorf("level %s", "error")
+	Panicf("level %s", "panic")
 }
-
-func TestConfig(t *testing.T) {
-	l, _ := zap.ParseAtomicLevel("debug")
-	warnLevel, _ := zap.ParseAtomicLevel("warn")
-	c := Config{
-		Name:          "test",
-		Level:         l,
-		Stacktrace:    true,
-		AddCaller:     true,
-		CallerShip:    0,
-		Mode:          "console",
-		FileName:      "",
-		ErrorFileName: "",
-		MaxSize:       0,
-		MaxAge:        0,
-		MaxBackup:     0,
-		Async:         false,
-		Json:          true,
-		Compress:      false,
-		IsReport:      true,
-		ReportConfig: report.ReportConfig{
-			Type:     "lark",
-			Token:    "https://open.feishu.cn/open-apis/bot/v2/hook/71f86ea6-ab9a-4645-b40b-1be00ffe910a",
-			ChatID:   0,
-			FlushSec: 3,
-			MaxCount: 20,
-			Level:    warnLevel,
-		},
-
-		Color:   false,
-		options: nil,
+func TestUpdateLogger(t *testing.T) {
+	ProdConfig.Port = 34567
+	InitDefaultLogger(ProdConfig)
+	//默认是info
+	Debugf("level %s", "debug")
+	Infof("level %s", "info")
+	Warnf("level %s", "warn")
+	Errorf("level %s", "error")
+	//	curl -X PUT localhost:8080/log/level -d level=debug
+	// 支持 form和json格式
+	req, _ := http.NewRequest(http.MethodPut, "http://localhost:34567/log/level?level=debug", nil)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		log.Panicf("update level error %s", err.Error())
 	}
-	logger := c.Build()
-	logger.Debug("debug level ", zap.Any("test", "[再见]"))
-	logger.Info("info level ", zap.Any("test", "test"))
-
-	for i := 0; i < 4; i++ {
-		logger.Error("error level ", zap.Any("test", "test1111"), zap.Any("filed", i))
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Panicf("read response error %s", err.Error())
 	}
-	defer logger.Sync()
-	logger.Panic("error level ", zap.Any("test", "test1111"))
+	defer resp.Body.Close()
+	var m = map[string]interface{}{}
+	if err := json.Unmarshal(data, &m); err != nil {
+		log.Panicf("unmarshal response error %s", err.Error())
+	}
+	log.Printf("update level response %v", m)
+	Debugf("level %s", "debug")
+	Debugf("level %s", "debug")
+}
+func TestReportLogger(t *testing.T) {
+	ProdConfig.ReportConfig = &report.ReportConfig{
+		Type:  "lark",
+		Token: "https://open.feishu.cn/open-apis/bot/v2/hook/71fxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+	}
+	InitDefaultLogger(ProdConfig)
+	//默认是info
+	Debugf("level %s", "debug")
+	Infof("level %s", "info")
+	Warnf("level %s", "warn")
+	Errorf("level %s", "error")
+	Panicf("level %s", "panic")
 
 }
+func TestFile(t *testing.T) {
+	DevConfig = &Config{
+		Level:      zap.NewAtomicLevelAt(zap.InfoLevel),
+		Stacktrace: false,
+		AddCaller:  true,
+		CallerShip: 1,
+		Mode:       FileMode,
+		FileName:   "./log/test.log",
+		//ErrorFileName: "./log/err.log",
+		MaxSize:   1,
+		MaxAge:    0,
+		MaxBackup: 5,
+	}
+	InitDefaultLogger(DevConfig)
+	for i := 0; i < 100; i++ {
+		for j := 0; j < 10000; j++ {
+			Infof("level %s", "info")
+			Warnf("level %s", "warn")
+			Errorf("level %s", "error")
+		}
+	}
+}
+
 func TestViperConfig(t *testing.T) {
 	v := viper.New()
 	v.SetConfigFile("./config.yaml")
 	if err := v.ReadInConfig(); err != nil {
-		log.Panicf("read config file failed, err:%v\n", err)
+		log.Panicf("read config file failed, err:%v", err)
 	}
 	var c Config
 	if err := v.Unmarshal(&c, viper.DecodeHook(StringToLogLevelHookFunc())); err != nil {
-		log.Panicf("Unmarshal config file failed, err:%v\n", err)
+		log.Panicf("Unmarshal config file failed, err:%v", err)
 	}
 	InitDefaultLogger(&c)
-	Debug("debug level ", zap.Any("test", "test"))
-	Info("info level ", zap.Any("test", "test"))
-	Warn("warn level ", zap.Any("test", "test"))
-	Error("error level ", zap.Any("test", "test"))
-	Panic("panic level ", zap.Any("test", "test"))
+	Debug("debug level ", String("test", "test"))
+	Info("info level ", Duration("Duration", time.Second))
+	Warn("warn level ", Any("test", "test"))
+	Error("error level ", Any("test", "test"))
+	Panic("panic level ", Any("test", "test"))
 	Sync()
 }

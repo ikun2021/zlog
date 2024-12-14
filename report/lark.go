@@ -1,6 +1,7 @@
 package report
 
 import (
+	"fmt"
 	"github.com/go-lark/lark"
 )
 
@@ -16,7 +17,11 @@ func NewLarkWriter(token string) *LarkWriter {
 }
 
 func (l *LarkWriter) Write(p []byte) (n int, err error) {
-	if _, err = l.bot.PostNotificationV2(lark.NewMsgBuffer(lark.MsgText).Text(string(p)).Build()); err != nil {
+	builder := lark.NewCardBuilder()
+	card := builder.Card(builder.Markdown(fmt.Sprintf("```json \n%s", string(p)))).Yellow().Title("错误日志")
+	msg := lark.NewMsgBuffer(lark.MsgInteractive)
+	om := msg.Card(card.String()).Build()
+	if _, err = l.bot.PostNotificationV2(om); err != nil {
 		return 0, err
 	}
 	return len(p), nil

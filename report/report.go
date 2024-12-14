@@ -24,7 +24,9 @@ const (
 
 // _bufSize 给一个比较大的值，避免write的时候出现flush的情况。
 const (
-	_bufSize = 1024 * 1024 //1M 内存
+	_bufSize         = 1024 * 1024 //1M 内存
+	_defaultFlushSec = 30          //10秒钟
+	_maxCount        = 50          //50条
 )
 
 type ReportConfig struct {
@@ -42,7 +44,7 @@ type ReportConfig struct {
 	Level zap.AtomicLevel `json:"Level" mapstructure:"level"`
 }
 
-func NewWriteSyncer(c ReportConfig) zapcore.WriteSyncer {
+func NewWriteSyncer(c *ReportConfig) zapcore.WriteSyncer {
 	var ws zapcore.WriteSyncer
 	switch ImType(c.Type) {
 	case Wx:
@@ -57,8 +59,14 @@ func NewWriteSyncer(c ReportConfig) zapcore.WriteSyncer {
 	return ws
 }
 
-func NewReportWriterBuffer(c ReportConfig) *ReportWriterBuffer {
+func NewReportWriterBuffer(c *ReportConfig) *ReportWriterBuffer {
 	ws := NewWriteSyncer(c)
+	if c.MaxCount == 0 {
+		c.MaxCount = _maxCount
+	}
+	if c.FlushSec == 0 {
+		c.FlushSec = _defaultFlushSec
+	}
 	rwb := &ReportWriterBuffer{
 		buf:      bufio.NewWriterSize(ws, _bufSize),
 		flushSec: c.FlushSec,
