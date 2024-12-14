@@ -229,5 +229,5 @@ for i := 0; i < 100; i++ {
 }
 ```
 
-![image-20241215010102420](C:\Users\dengyongcai\AppData\Roaming\Typora\typora-user-images\image-20241215010102420.png)
+![img](https://cdn.nlark.com/yuque/0/2024/png/12466223/1734196509008-4795f6cf-6f9e-44aa-9187-1fe809684463.png)
 
