@@ -87,8 +87,10 @@ type ReportWriterBuffer struct {
 func (l *ReportWriterBuffer) Start() {
 	for {
 		time.Sleep(time.Duration(l.flushSec) * time.Second)
-		if err := l.Sync(); err != nil {
-			log.Printf("report writer buffer sync error:%v", err)
+		if l.count > 0 {
+			if err := l.Sync(); err != nil {
+				log.Printf("report writer buffer sync error:%v", err)
+			}
 		}
 	}
 }
