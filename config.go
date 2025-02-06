@@ -157,7 +157,7 @@ func (lc *Config) Build() *zap.Logger {
 	}
 	//文件模式同时输出到控制台
 	if lc.Mode == _file && lc.Console {
-		consoleWs := zapcore.NewCore(encoder, zapcore.Lock(os.Stdout), zapcore.ErrorLevel)
+		consoleWs := zapcore.NewCore(encoder, zapcore.Lock(os.Stdout), lc.Level)
 		c = append(c, consoleWs)
 	}
 	if lc.ReportConfig != nil {
