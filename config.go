@@ -226,7 +226,11 @@ func StringToLogLevelHookFunc() mapstructure.DecodeHookFunc {
 		if f.Kind() != reflect.String {
 			return data, nil
 		}
-		atomicLevel, err := zap.ParseAtomicLevel(data.(string))
+		s, ok := data.(string)
+		if !ok || s == "" {
+			return data, nil
+		}
+		atomicLevel, err := zap.ParseAtomicLevel(s)
 		if err != nil {
 			return data, nil
 		}

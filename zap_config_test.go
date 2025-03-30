@@ -104,7 +104,7 @@ func TestFile(t *testing.T) {
 
 func TestViperConfig(t *testing.T) {
 	v := viper.New()
-	v.SetConfigFile("./config.yaml")
+	v.SetConfigFile("./config.toml")
 	if err := v.ReadInConfig(); err != nil {
 		log.Panicf("read config file failed, err:%v", err)
 	}
