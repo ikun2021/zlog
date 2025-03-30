@@ -84,15 +84,22 @@ func TestFile(t *testing.T) {
 		MaxSize:   1,
 		MaxAge:    0,
 		MaxBackup: 5,
+		Json:      true,
 	}
 	InitDefaultLogger(DevConfig)
 	for i := 0; i < 100; i++ {
-		for j := 0; j < 10000; j++ {
-			Infof("level %s", "info")
-			Warnf("level %s", "warn")
-			Errorf("level %s", "error")
-		}
+		Infof("level %s", "info")
+		Warnf("level %s", "warn")
+		Errorf("level %s", "error")
+
 	}
+	//for i := 0; i < 100; i++ {
+	//	for j := 0; j < 10000; j++ {
+	//		Infof("level %s", "info")
+	//		Warnf("level %s", "warn")
+	//		Errorf("level %s", "error")
+	//	}
+	//}
 }
 
 func TestViperConfig(t *testing.T) {

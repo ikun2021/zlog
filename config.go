@@ -3,6 +3,7 @@ package zlog
 import (
 	"fmt"
 	"github.com/luxun9527/zlog/report"
+
 	"github.com/mitchellh/mapstructure"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -75,6 +76,7 @@ func (lc *Config) UpdateLevel(level zapcore.Level) {
 }
 
 func (lc *Config) Build() *zap.Logger {
+	lc.options = nil
 	if lc.Mode != _file && lc.Mode != _console {
 		log.Panicln("mode must be console or file")
 	}
@@ -157,7 +159,7 @@ func (lc *Config) Build() *zap.Logger {
 	}
 	//文件模式同时输出到控制台
 	if lc.Mode == _file && lc.Console {
-		consoleWs := zapcore.NewCore(encoder, zapcore.Lock(os.Stdout), lc.Level)
+		consoleWs := zapcore.NewCore(encoder, zapcore.Lock(os.Stdout), zapcore.ErrorLevel)
 		c = append(c, consoleWs)
 	}
 	if lc.ReportConfig != nil {
@@ -194,18 +196,18 @@ func (lc *Config) Build() *zap.Logger {
 	}
 	logger = logger.WithOptions(lc.options...)
 	if lc.Port > 0 {
-		lc.InitLogServer(lc.Port)
+		lc.InitLogServer(lc.Port, logger)
 		logger.Sugar().Infof("log server init success,port:%d", lc.Port)
 	}
 	return logger
 
 }
 
-func (lc *Config) InitLogServer(port int32) {
+func (lc *Config) InitLogServer(port int32, logger *zap.Logger) {
 	go func(p int32) {
 		_once.Do(func() {
 			if err := http.ListenAndServe(fmt.Sprintf("127.0.0.1:%d", p), lc.Level); err != nil {
-				zap.S().Error("init log server start failed", zap.Error(err))
+				logger.Panic("init http logger failed ", zap.Error(err))
 			}
 		})
 	}(port)
