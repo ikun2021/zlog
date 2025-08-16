@@ -72,6 +72,19 @@ func TestReportLogger(t *testing.T) {
 	Panicf("level %s", "panic")
 
 }
+
+func TestCtxLog(t *testing.T) {
+	ctx := InitTrace()
+	DebugfCtx(ctx, "level %s", "debug")                 //level info traceId 355dca29445483687de01f8b31a375f9
+	InfofCtx(ctx, "level %s", "info")                   //level warn traceId 355dca29445483687de01f8b31a375f9
+	WarnfCtx(ctx, "level %s", "warn")                   //level error traceId 355dca29445483687de01f8b31a375f9
+	ErrorfCtx(ctx, "level %s", "error")                 //level error traceId 355dca29445483687de01f8b31a375f9
+	DebugCtx(ctx, "level ", zap.String("key", "value")) //level debug traceId 355dca29445483687de01f8b31a375f9
+	InfoCtx(ctx, "level ", zap.String("key", "value"))  //level info traceId 355dca29445483687de01f8b31a375f9
+	WarnCtx(ctx, "level ", zap.String("key", "value"))  //level 	{"key": "value", "traceId": "355dca29445483687de01f8b31a375f9"}
+	ErrorCtx(ctx, "level ", zap.String("key", "value")) //level 	{"key": "value", "traceId": "355dca29445483687de01f8b31a375f9"}
+}
+
 func TestFile(t *testing.T) {
 	DevConfig = &Config{
 		Level:      zap.NewAtomicLevelAt(zap.InfoLevel),
@@ -112,6 +125,7 @@ func TestViperConfig(t *testing.T) {
 	if err := v.Unmarshal(&c, viper.DecodeHook(StringToLogLevelHookFunc())); err != nil {
 		log.Panicf("Unmarshal config file failed, err:%v", err)
 	}
+
 	InitDefaultLogger(&c)
 	Debug("debug level ", String("test", "test"))
 	Info("info level ", Duration("Duration", time.Second))

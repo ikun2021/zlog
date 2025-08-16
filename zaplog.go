@@ -47,6 +47,15 @@ const (
 )
 
 var (
+	globalTrace = "zlog"
+	initSpan    = "init"
+)
+
+func SetGlobalTrace(trace string) {
+	globalTrace = trace
+}
+
+var (
 	DevConfig = &Config{
 		Level:      zap.NewAtomicLevelAt(zap.InfoLevel),
 		AddCaller:  true,

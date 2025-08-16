@@ -28,6 +28,9 @@ const (
 	_file    = "file"
 	_console = "console"
 )
+const (
+	_levelType = "zap.AtomicLevel"
+)
 
 var (
 	_once sync.Once
@@ -220,19 +223,18 @@ func CustomTimeEncoder(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
 // StringToLogLevelHookFunc viper的string转zapcore.Level
 func StringToLogLevelHookFunc() mapstructure.DecodeHookFunc {
 	return func(
-		f reflect.Type,
-		t reflect.Type,
-		data interface{}) (interface{}, error) {
-		if f.Kind() != reflect.String {
-			return data, nil
+		from reflect.Value, to reflect.Value) (interface{}, error) {
+		if to.Type().String() != _levelType {
+			return from.Interface(), nil
 		}
-		s, ok := data.(string)
+
+		s, ok := from.Interface().(string)
 		if !ok || s == "" {
-			return data, nil
+			return from.Interface(), nil
 		}
 		atomicLevel, err := zap.ParseAtomicLevel(s)
 		if err != nil {
-			return data, nil
+			return from.Interface(), nil
 		}
 		// Convert it by parsing
 		return atomicLevel, nil
