@@ -29,7 +29,7 @@ func InitTrace() context.Context {
 func DebugfCtx(ctx context.Context, msg string, fields ...interface{}) {
 	fs := extractTrace(ctx)
 	for _, v := range fs {
-		msg = msg + " %s"
+		msg = msg + " %v"
 		fields = append(fields, v)
 	}
 	DefaultSugarLog.Debugf(msg, fields...)
@@ -37,7 +37,7 @@ func DebugfCtx(ctx context.Context, msg string, fields ...interface{}) {
 func InfofCtx(ctx context.Context, msg string, fields ...interface{}) {
 	fs := extractTrace(ctx)
 	for _, v := range fs {
-		msg = msg + " %s"
+		msg = msg + " %v"
 		fields = append(fields, v)
 	}
 	DefaultSugarLog.Infof(msg, fields...)
@@ -46,7 +46,7 @@ func InfofCtx(ctx context.Context, msg string, fields ...interface{}) {
 func WarnfCtx(ctx context.Context, msg string, fields ...interface{}) {
 	fs := extractTrace(ctx)
 	for _, v := range fs {
-		msg = msg + " %s"
+		msg = msg + " %v"
 		fields = append(fields, v)
 	}
 	DefaultSugarLog.Warnf(msg, fields...)
@@ -54,7 +54,7 @@ func WarnfCtx(ctx context.Context, msg string, fields ...interface{}) {
 func ErrorfCtx(ctx context.Context, msg string, fields ...interface{}) {
 	fs := extractTrace(ctx)
 	for _, v := range fs {
-		msg = msg + " %s"
+		msg = msg + " %v"
 		fields = append(fields, v)
 	}
 	DefaultSugarLog.Errorf(msg, fields...)
@@ -62,7 +62,7 @@ func ErrorfCtx(ctx context.Context, msg string, fields ...interface{}) {
 func PanicfCtx(ctx context.Context, msg string, fields ...interface{}) {
 	fs := extractTrace(ctx)
 	for _, v := range fs {
-		msg = msg + " %s"
+		msg = msg + " %v"
 		fields = append(fields, v)
 	}
 	DefaultSugarLog.Panicf(msg, fields...)
@@ -168,7 +168,8 @@ func extractTrace(ctx context.Context) []interface{} {
 		fields = append(fields, spanCtx.TraceID().String())
 	}
 	if spanCtx.HasSpanID() {
-		fields = append(fields, zap.String("spanId", spanCtx.SpanID().String()))
+		fields = append(fields, "spanId")
+		fields = append(fields, spanCtx.SpanID().String())
 	}
 	return fields
 }
